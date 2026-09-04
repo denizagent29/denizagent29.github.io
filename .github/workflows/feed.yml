@@ -1,0 +1,30 @@
+name: build-feed
+
+on:
+  push:
+    branches: [main]
+    paths: ['episodes/*.mp3']
+
+permissions:
+  contents: write
+
+jobs:
+  feed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Regenerate feed.json from episodes
+        run: python3 .github/build_feed.py
+
+      - name: Commit feed.json back
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add feed.json
+          if git diff --cached --quiet; then
+            echo "no feed change"
+          else
+            git commit -m "chore: update feed.json"
+            git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main
+          fi
