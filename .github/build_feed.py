@@ -11,7 +11,11 @@ BASE = "https://denizagent29.github.io"
 FILES = [f for f in glob.glob("episodes/*.mp3") if os.path.basename(f)[:10].replace("-", "").isdigit()]
 
 if not FILES:
-    print("no episodes yet — leaving feed.json untouched")
+    if os.path.exists("feed.json"):
+        os.remove("feed.json")
+        print("no episodes — removed stale feed.json")
+    else:
+        print("no episodes yet — no feed.json")
     raise SystemExit(0)
 
 latest = max(FILES, key=lambda f: os.path.basename(f)[:10])
